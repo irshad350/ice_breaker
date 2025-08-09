@@ -9,14 +9,14 @@ from tools.tavily import get_wikipedia_urls
 
 load_dotenv()
 
-def lookup(topic: str) -> str:
+def lookup(topic: str, llm: ChatOllama) -> str:
     # Prompt tells LLM to choose the best Wikipedia article from a list
     template = """Use the 'tavily search' tool to find multiple Wikipedia URLs for the given topic.
-Your job is to pick the **most relevant Wikipedia article URL** for the topic.
-Return only that single best URL.
-
-Topic: "{topic_to_search}"
-"""
+                    Your job is to pick the **most relevant Wikipedia article URL** for the topic.
+                    Return only that single best URL.
+                    
+                    Topic: "{topic_to_search}"
+                """
 
     prompt = PromptTemplate(input_variables=["topic_to_search"], template=template)
 
@@ -30,9 +30,6 @@ Topic: "{topic_to_search}"
 
     # Pull ReAct prompt
     react_prompt = hub.pull("hwchase17/react")
-
-    # Use Ollama model (e.g., gemma3)
-    llm = ChatOllama(model="gemma3")
 
     # Create ReAct agent
     agent = create_react_agent(llm=llm, tools=tools_for_agent, prompt=react_prompt)

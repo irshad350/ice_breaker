@@ -1,19 +1,25 @@
 from langchain_tavily import TavilySearch
 
-
-def get_wikipedia_page_name(topic: str):
-    """Search the topic and get the wikipedia url"""
+def get_wikipedia_urls(topic: str) -> str:
+    """Search the topic and return all relevant Wikipedia URLs as a list of strings."""
     search = TavilySearch(
-        max_results=5,
-        topic="general",
-        # include_answer=False,
-        # include_raw_content=False,
-        # include_images=False,
-        # include_image_descriptions=False,
-        # search_depth="basic",
-        # time_range="day",
-        # include_domains=None,
-        # exclude_domains=None
+        max_results=10,
+        topic="general"
     )
 
-    return search.invoke({"query": topic})
+    results = search.invoke({"query": topic})
+
+    if isinstance(results, dict) and "results" in results:
+        results = results["results"]
+
+    wikipedia_links = [
+        result.get("url", "")
+        for result in results
+        if "en.wikipedia.org/wiki/" in result.get("url", "")
+        and "Category:" not in result.get("url", "")
+    ]
+
+    if not wikipedia_links:
+        return "No relevant Wikipedia URLs found."
+
+    return "\n".join(wikipedia_links)  # Return as newline-separated string for the LLM
